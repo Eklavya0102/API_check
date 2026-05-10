@@ -1,0 +1,1 @@
+# No third-party deps — uses stdlib only (http.client, json, urllib)
