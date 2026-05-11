@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KeyProbe — API Key Tester</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+
+  <!-- ── Ambient background blobs ── -->
+  <div class="blob blob-1" aria-hidden="true"></div>
+  <div class="blob blob-2" aria-hidden="true"></div>
+  <div class="blob blob-3" aria-hidden="true"></div>
+  <div class="grid-overlay" aria-hidden="true"></div>
+
+  <!-- ── Toast container ── -->
+  <div id="toast-container" role="status" aria-live="polite"></div>
+
+  <!-- ── Main layout ── -->
+  <main class="page">
+
+    <!-- Header -->
+    <header class="hero">
+      <div class="badge-row">
+        <span class="badge pulse-dot">Live</span>
+        <span class="badge-text">No keys stored · No logs · No BS</span>
+      </div>
+      <h1 class="hero-title">
+        Test Your <span class="accent">Keys</span> Here
+      </h1>
+      <p class="hero-sub">
+        Securely validate whether your API keys are active and working — instantly.
+      </p>
+    </header>
+
+    <!-- Card -->
+    <section class="card" aria-label="API Key Tester">
+
+      <!-- Step 1: Provider -->
+      <div class="field-group" id="step-provider">
+        <label class="field-label" for="provider-search">
+          <span class="step-num">01</span> Choose Provider
+        </label>
+        <div class="select-wrapper" id="provider-wrapper">
+          <input
+            type="text"
+            id="provider-search"
+            class="select-input"
+            placeholder="Search providers…"
+            autocomplete="off"
+            aria-haspopup="listbox"
+            aria-expanded="false"
+            aria-controls="provider-list"
+          />
+          <span class="select-icon" aria-hidden="true">
+            <svg viewBox="0 0 20 20" fill="none"><path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          </span>
+          <ul class="dropdown-list" id="provider-list" role="listbox" aria-label="Select provider"></ul>
+        </div>
+      </div>
+
+      <!-- Step 2: Model -->
+      <div class="field-group hidden" id="step-model">
+        <label class="field-label" for="model-select">
+          <span class="step-num">02</span> Choose Model
+        </label>
+        <div class="select-wrapper" id="model-wrapper">
+          <select id="model-select" class="native-select" aria-label="Select model"></select>
+          <span class="select-icon" aria-hidden="true">
+            <svg viewBox="0 0 20 20" fill="none"><path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          </span>
+        </div>
+      </div>
+
+      <!-- Step 3: API Key -->
+      <div class="field-group hidden" id="step-key">
+        <label class="field-label" for="api-key-input">
+          <span class="step-num">03</span> Enter API Key
+        </label>
+        <div class="key-input-wrapper">
+          <input
+            type="password"
+            id="api-key-input"
+            class="key-input"
+            placeholder="sk-••••••••••••••••••••••••••••••••"
+            autocomplete="off"
+            spellcheck="false"
+            aria-label="API Key"
+          />
+          <div class="key-actions">
+            <button class="icon-btn" id="toggle-visibility" title="Show/hide key" aria-label="Toggle key visibility">
+              <svg id="eye-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              <svg id="eye-closed" class="hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+            </button>
+            <button class="icon-btn" id="paste-btn" title="Paste from clipboard" aria-label="Paste API key">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+            </button>
+            <button class="icon-btn" id="clear-key-btn" title="Clear key" aria-label="Clear API key">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Disclaimer -->
+      <p class="disclaimer" id="disclaimer-row">
+        <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M10 1a9 9 0 100 18A9 9 0 0010 1zm.75 4.75a.75.75 0 00-1.5 0v4.5a.75.75 0 001.5 0v-4.5zm-.75 7.25a1 1 0 110 2 1 1 0 010-2z" clip-rule="evenodd"/></svg>
+        Your API keys are <strong>never stored, logged, or shared</strong>. Keys are used only for a single live validation request, then discarded.
+      </p>
+
+      <!-- Submit -->
+      <button class="test-btn" id="test-btn" disabled aria-label="Test API key">
+        <span class="btn-inner">
+          <span class="btn-text">Test API Key</span>
+          <span class="btn-spinner hidden" aria-hidden="true"></span>
+        </span>
+        <span class="btn-shine" aria-hidden="true"></span>
+      </button>
+
+      <!-- Reset -->
+      <button class="reset-btn hidden" id="reset-btn">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 4v5h5M16 16v-5h-5"/><path d="M20.49 9A9 9 0 105.64 5.64L1 10"/></svg>
+        Test Another Key
+      </button>
+    </section>
+
+    <!-- ── Result Card ── -->
+    <div class="result-card hidden" id="result-card" role="region" aria-live="polite" aria-label="Test result">
+      <div class="result-header">
+        <div class="result-icon" id="result-icon"></div>
+        <div class="result-meta">
+          <h2 class="result-title" id="result-title"></h2>
+          <p class="result-msg" id="result-msg"></p>
+        </div>
+      </div>
+      <div class="result-details" id="result-details"></div>
+      <div class="result-actions">
+        <button class="copy-btn" id="copy-result-btn" title="Copy result">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+          Copy Result
+        </button>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <p>Built for developers · Keys never leave your browser request · Open Source</p>
+    </footer>
+
+  </main>
+
+  <script src="/static/script.js"></script>
+</body>
+</html>

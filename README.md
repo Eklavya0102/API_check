@@ -1,92 +1,165 @@
-# LLM API Key Checker
+# KeyProbe — API Key Tester
 
-Validate API keys for 11 LLM providers — with detailed failure reasons.
-Vercel-ready with a Python serverless backend and a zero-dependency frontend.
+A modern, production-style web app to validate API keys for 24+ providers — instantly, securely, without ever storing your keys.
 
-## Providers supported
+---
 
-| Provider       | Key format      |
-|----------------|-----------------|
-| OpenAI         | `sk-...`        |
-| Anthropic      | `sk-ant-...`    |
-| Google Gemini  | `AIza...`       |
-| Mistral AI     | any             |
-| Groq           | `gsk_...`       |
-| xAI (Grok)     | `xai-...`       |
-| DeepSeek       | `sk-...`        |
-| Cohere         | any             |
-| Together AI    | any             |
-| Perplexity     | `pplx-...`      |
-| Hugging Face   | `hf_...`        |
+## Features
 
-## Failure reasons detected
+- **24+ providers** — OpenAI, Anthropic, Gemini, Groq, Stripe, GitHub, Discord, and more
+- **Live validation** — sends a minimal real request to the provider's official endpoint
+- **Detailed error diagnosis** — invalid key vs. quota exceeded vs. permission error vs. timeout
+- **Zero storage** — keys are never logged, saved, or sent anywhere except the provider
+- **Modern dark UI** — glassmorphism, animated blobs, smooth transitions
 
-- **invalid** — wrong key, typo, or copy-paste error
-- **expired** — key has expired (OpenAI)
-- **deactivated** — key was manually revoked
-- **quota_exceeded** — billing limit reached
-- **rate_limited** — key is valid but temporarily throttled
-- **forbidden** — account lacks permissions
-- **api_disabled** — API not enabled in cloud project (Gemini)
-- **no_balance** — insufficient credits (DeepSeek)
-- **network_error** — couldn't reach the provider
-- **server_error** — provider outage (not your key)
+---
 
-## Deploy to Vercel
+## Quick Start
+
+### 1. Clone / set up
 
 ```bash
-npm i -g vercel
-vercel
+cd project
+python -m venv venv
+source venv/bin/activate      # Windows: venv\Scripts\activate
+pip install -r requirements.txt
 ```
 
-That's it. Vercel auto-detects `vercel.json` and deploys:
-- `api/check.py`  →  serverless function at `/api/check`
-- `public/`       →  static frontend
-
-## Run locally
+### 2. Run
 
 ```bash
-# Python check from CLI
-python3 - <<'EOF'
-from api.check import check_key
-print(check_key("openai", "sk-your-key-here"))
-EOF
-
-# Or just open public/index.html in a browser
-# (frontend calls /api/check — works after `vercel dev`)
+python app.py
 ```
 
-## API
+Open → [http://127.0.0.1:5000](http://127.0.0.1:5000)
 
-**POST** `/api/check`
+---
 
-```json
-{ "provider": "openai", "key": "sk-..." }
+## Project Structure
+
+```
+project/
+├── app.py              # Flask backend + all provider test logic
+├── requirements.txt
+├── README.md
+├── static/
+│   ├── style.css       # Dark glassmorphism styles
+│   └── script.js       # Frontend interactions
+└── templates/
+    └── index.html      # Main page
 ```
 
-Response:
-```json
-{
-  "valid": false,
-  "status": "quota_exceeded",
-  "reason": "Usage quota exceeded. Add billing or upgrade your plan at platform.openai.com.",
-  "detail": "...(raw API response excerpt)...",
-  "latency_ms": 312,
-  "provider": "OpenAI"
+---
+
+## Adding a New Provider
+
+**1. Register it in `PROVIDERS` dict (app.py):**
+
+```python
+"myprovider": {
+    "name": "My Provider",
+    "models": ["model-a", "model-b"],
+    "default_model": "model-a",
+},
+```
+
+**2. Write a test function:**
+
+```python
+def test_myprovider(api_key, model):
+    url = "https://api.myprovider.com/v1/chat/completions"
+    headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
+    body = {"model": model, "messages": [{"role": "user", "content": "Hi"}], "max_tokens": 1}
+    r = requests.post(url, headers=headers, json=body, timeout=15)
+    if r.status_code == 200:
+        return True, "success", "Key is valid and working.", r.json()
+    etype, emsg = classify_error(r.status_code, r.text)
+    return False, etype, emsg, {}
+```
+
+**3. Register in `TESTER_MAP`:**
+
+```python
+TESTER_MAP = {
+    ...
+    "myprovider": test_myprovider,
 }
 ```
 
-`valid` is `true` (working), `false` (broken), or `null` (provider outage).
+That's it — the frontend will pick it up automatically.
 
-## File structure
+---
+
+## Security
+
+- API keys are **never** stored in memory beyond the single request lifecycle
+- Keys are **never** logged to disk or console
+- Masked key representation (`sk-abc•••••••xyz`) is shown in results
+- Input validation + length checks on the backend
+- No database, no analytics, no third-party tracking
+
+---
+
+## Supported Providers
+
+| Provider       | Category    |
+|---------------|-------------|
+| OpenAI        | AI          |
+| Anthropic     | AI          |
+| Google Gemini | AI          |
+| Groq          | AI          |
+| Mistral       | AI          |
+| Cohere        | AI          |
+| Together AI   | AI          |
+| Perplexity    | AI          |
+| DeepSeek      | AI          |
+| OpenRouter    | AI          |
+| Fireworks AI  | AI          |
+| HuggingFace   | AI          |
+| Stability AI  | AI/Image    |
+| Replicate     | AI          |
+| xAI (Grok)    | AI          |
+| AI21          | AI          |
+| NVIDIA NIM    | AI          |
+| Stripe        | Payments    |
+| GitHub        | Dev         |
+| Discord       | Messaging   |
+| Telegram      | Messaging   |
+| Twilio        | Comms       |
+| Cloudflare    | Infra       |
+| DigitalOcean  | Infra       |
+
+---
+
+## Deploy to Vercel
+
+### One-click via Vercel CLI
+
+```bash
+npm i -g vercel
+cd keyprobe-vercel
+vercel
+```
+
+Follow the prompts — Vercel auto-detects the Python runtime via `api/index.py`.
+
+### Via Vercel Dashboard
+
+1. Push this folder to a GitHub repo
+2. Go to [vercel.com/new](https://vercel.com/new)
+3. Import the repo — Vercel picks up `vercel.json` automatically
+4. Click **Deploy**
+
+### Project structure Vercel uses
 
 ```
-llm-key-checker/
+keyprobe-vercel/
 ├── api/
-│   └── check.py        ← Python serverless function
-├── public/
-│   └── index.html      ← Frontend (zero deps)
-├── vercel.json
-├── requirements.txt
-└── README.md
+│   └── index.py        ← Vercel serverless entry point (Flask WSGI)
+├── static/             ← Served as static assets
+├── templates/          ← Jinja2 templates (loaded by api/index.py)
+├── vercel.json         ← Routing rules
+└── requirements.txt    ← Python deps (auto-installed by Vercel)
 ```
+
+> **Note:** The original `app.py` at the root still works for local `python app.py` — it's kept for local dev convenience.
