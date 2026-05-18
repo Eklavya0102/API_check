@@ -51,11 +51,63 @@ The Flask backend exposes two endpoints. Both are JSON.
 
 Returns the full list of supported providers with their available models.
 
+**Response:**
+```json
+[
+  {
+    "id": "openai",
+    "name": "OpenAI",
+    "models": ["gpt-4o", "gpt-4.1", "gpt-4-turbo", "gpt-3.5-turbo"],
+    "default_model": "gpt-4o"
+  },
+  ...
+]
+```
+
+---
 
 ### `POST /api/test`
 
 Tests an API key for a given provider and model.
 
+**Request body:**
+```json
+{
+  "provider": "openai",
+  "model": "gpt-4o",
+  "api_key": "sk-..."
+}
+```
+
+**Success response:**
+```json
+{
+  "success": true,
+  "provider": "OpenAI",
+  "provider_id": "openai",
+  "model": "gpt-4o",
+  "message": "Key is valid and working.",
+  "latency_ms": 312,
+  "masked_key": "sk-abc•••••••••xyz",
+  "error_type": null,
+  "meta": {}
+}
+```
+
+**Failure response:**
+```json
+{
+  "success": false,
+  "provider": "OpenAI",
+  "provider_id": "openai",
+  "model": "gpt-4o",
+  "message": "Invalid API key — key was rejected by the provider.",
+  "latency_ms": 189,
+  "masked_key": "sk-abc•••••••••xyz",
+  "error_type": "invalid_key",
+  "meta": {}
+}
+```
 
 **Error types returned:**
 
@@ -77,6 +129,17 @@ Tests an API key for a given provider and model.
 ## Setup
 
 **Requirements:** Python 3.9+, pip
+
+```bash
+# Clone or unzip the project
+cd keyprobe-vercel
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Run
+python app.py
+```
 
 Open `http://127.0.0.1:5000` in your browser.
 

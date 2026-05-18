@@ -1,3 +1,8 @@
+"""
+API Key Tester - Flask Backend
+Tests API keys for various providers without storing them.
+"""
+
 import time
 import requests
 from flask import Flask, request, jsonify, render_template
@@ -6,12 +11,13 @@ from flask_cors import CORS
 app = Flask(__name__)
 CORS(app)
 
+# ─────────────────────────────────────────────
 # PROVIDER REGISTRY
 # Each entry: endpoint, headers builder, body builder, success check
-
+# ─────────────────────────────────────────────
 
 PROVIDERS = {
-    # AI Providers
+    # ── AI Providers ──────────────────────────
     "openai": {
         "name": "OpenAI",
         "models": ["gpt-4o", "gpt-4.1", "gpt-4-turbo", "gpt-3.5-turbo"],
@@ -97,7 +103,7 @@ PROVIDERS = {
         "models": ["meta/llama-3.1-70b-instruct", "nvidia/mistral-nemo-minitron-8b-8k-instruct"],
         "default_model": "meta/llama-3.1-70b-instruct",
     },
-    # Other API Providers
+    # ── Other API Providers ───────────────────
     "stripe": {
         "name": "Stripe",
         "models": ["N/A"],
@@ -136,9 +142,9 @@ PROVIDERS = {
 }
 
 
-
+# ─────────────────────────────────────────────
 # PROVIDER TEST FUNCTIONS
-
+# ─────────────────────────────────────────────
 
 def classify_error(status_code, body_text):
     """Map HTTP status + body text to human-readable error reason."""
@@ -418,9 +424,9 @@ def test_digitalocean(api_key, model):
     return False, etype, emsg, {}
 
 
-
+# ─────────────────────────────────────────────
 # PROVIDER DISPATCH MAP
-
+# ─────────────────────────────────────────────
 TESTER_MAP = {
     "openai": test_openai,
     "anthropic": test_anthropic,
@@ -449,8 +455,9 @@ TESTER_MAP = {
 }
 
 
-
-#routes
+# ─────────────────────────────────────────────
+# ROUTES
+# ─────────────────────────────────────────────
 
 @app.route("/")
 def index():
@@ -480,7 +487,7 @@ def test_key():
     model = (data.get("model") or "").strip()
     api_key = (data.get("api_key") or "").strip()
 
-    # Input validation 
+    # ── Input validation ─────────────────────
     if not provider_id:
         return jsonify({"success": False, "error_type": "validation", "message": "Provider is required."}), 400
     if not api_key:
